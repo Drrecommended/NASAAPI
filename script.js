@@ -10,10 +10,10 @@ const apiKey = "He6Tx5dxSGHnHohdNq76tBE9aI6wMZSrWebnMNMx";
 const apiUrl = `https://api.nasa.gov/planetary/apod?api_key=${apiKey}&count=${count}`;
 
 let resultsArray = [];
+let favorites = {};
 
 function updateDOM() {
   resultsArray.forEach((result) => {
-    console.log(result)
     // card container
     const card = document.createElement("div");
     card.classList.add("card");
@@ -32,16 +32,17 @@ function updateDOM() {
     const cardBody = document.createElement("div");
     cardBody.classList.add("card-body");
     //card title
-    const cardTitle = document = createElement("h5");
+    const cardTitle = document.createElement("h5");
     cardTitle.classList.add("card-title");
     cardTitle.textContent = result.title;
     //save text
     const saveText = document.createElement("p");
     saveText.classList.add("clickable");
     saveText.textContent = "Add to Favorites";
+    saveText.setAttribute("onclick", `saveFavorite('${result.url}')`);
     //card text
     const cardText = document.createElement("p");
-    cardText.textContent = result.explantion;
+    cardText.textContent = result.explanation;
     //footer container
     const footer = document.createElement("small");
     footer.classList.add("text-muted");
@@ -50,13 +51,17 @@ function updateDOM() {
     date.textContent = result.date;
     //copyright
     const copyright = document.createElement("span");
-    copyright.textContent = ` ${result.copyright}`;
+    if (result.copyright === undefined) {
+      copyright.textContent = "";
+    } else {
+      copyright.textContent = ` ${result.copyright}`;
+    }
     //append
     footer.append(date, copyright);
-    cardBody.append(cardTitle, cardText, saveText, footer);
+    cardBody.append(cardTitle, saveText, cardText, footer);
     link.appendChild(image);
     card.append(link, cardBody);
-    console.log(card);
+    imagesContainer.appendChild(card);
   });
 }
 
@@ -65,12 +70,27 @@ function updateDOM() {
 async function getNasaPictures() {
   try {
     const response = await fetch(apiUrl);
-    console.log(response);
     resultsArray = await response.json();
     updateDOM();
   } catch (error) {
     //catch error
   }
+}
+
+// save favorite
+function saveFavorite(itemUrl) {
+  //loop over array
+  resultsArray.forEach((item) => {
+    if (item.url.includes(itemUrl)) {
+      favorites[itemUrl] = item;
+      console.log(favorites);
+      //show save confirm
+      saveConfirmed.hidden = false;
+      setTimeout(() => {
+        saveConfirmed.hidden = true;
+      }, 2000);
+    }
+  });
 }
 
 //On Load
